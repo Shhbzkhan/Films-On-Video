@@ -1,0 +1,70 @@
+/* Footer styling */
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #1e516d;
+  color: #e5e7eb;
+  padding: 10px 20px;
+  z-index: 999;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Left: Contact Us */
+.footer-left {
+  flex: 1;
+  margin-left: -150px;
+  text-align: left;
+}
+
+.footer-contact {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+/* Center: Address */
+.footer-center {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Right: Social Icons */
+.footer-right {
+  margin: -150px;
+  flex: 1;
+  text-align: right;
+}
+
+.social-icon {
+  font-size: 1.5rem;
+  margin-left: 10px;
+  color: #e5e7eb;
+  transition: color 0.2s;
+}
+
+.social-icon:hover {
+  color: #06b6d4;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}

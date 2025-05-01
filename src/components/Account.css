@@ -1,0 +1,13 @@
+/* src/components/Account.css */
+.account-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  h1 {
+    margin-bottom: 1rem;
+  }
+  

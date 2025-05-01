@@ -1,0 +1,83 @@
+/* Navbar styling */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #1e516d;
+  padding: 15px 20px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px;
+  box-sizing: border-box;
+}
+
+/* Navbar left: hamburger menu */
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-button {
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: var(--navbar-text, #f5f5f5);
+  cursor: pointer;
+}
+
+/* Navbar center: slogan */
+.navbar-center {
+  flex: 1;
+  text-align: center;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: var(--navbar-text, #f5f5f5);
+}
+
+/* Navbar right: icons */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+  gap: 15px;
+}
+
+.navbar-icons {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.search-icon {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.cart-icon {
+  font-size: 30px;
+  color: var(--navbar-text, #f5f5f5);
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+  .navbar-left,
+  .navbar-center,
+  .navbar-right {
+    width: 100%;
+    text-align: center;
+    margin: 5px 0;
+  }
+  .navbar-center {
+    font-size: 1rem;
+  }
+}
