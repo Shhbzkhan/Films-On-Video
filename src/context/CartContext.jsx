@@ -34,82 +34,89 @@
 // export const useCart = () => useContext(CartContext);
 
 
-import React, { createContext, useContext, useState } from "react";
+// src/context/CartContext.js
+import React, { createContext, useReducer, useContext, useMemo, useEffect } from 'react';
 
-export const CartContext = createContext();
+const CartContext = createContext();
+// Load initial cart from localStorage
+const initialState = JSON.parse(localStorage.getItem('cart')) || [];
 
-export const CartProvider = ({ children }) => {
-    const [cart, setCart] = useState([]);
-
-     // Each Add => new line item
-  const addToCart = (movie) => {
-    // push a new object with quantity=1 (or use existing quantity if you prefer)
-    setCart((prevCart) => [...prevCart, { ...movie, quantity: 1 }]);
-  };
-
-  // Decrement quantity by 1; if quantity goes to 0 => remove item
-  const decrementItem = (id) => {
-    setCart((prevCart) => {
-      const newCart = [...prevCart];
-      const idx = newCart.findIndex((item) => item.id === id);
-      if (idx >= 0) {
-        if (newCart[idx].quantity > 1) {
-          newCart[idx].quantity -= 1;
-        } else {
-          // quantity is 1 => remove entire item
-          newCart.splice(idx, 1);
+function cartReducer(state, action) {
+  switch (action.type) {
+    case 'ADD_ITEM': {
+      const payload = action.payload;
+      // Determine numeric price from various possible fields
+      const rawPrice = payload.CurrentPrice ?? payload.currentPrice ?? payload.Price ?? payload.price ?? 0;
+      const price = parseFloat(rawPrice) || 0;
+      const mergeKey = payload.id ?? payload.Title;
+      const existingIndex = state.findIndex(item => item.mergeKey === mergeKey);
+      if (existingIndex !== -1) {
+        const newState = [...state];
+        newState[existingIndex] = {
+          ...newState[existingIndex],
+          quantity: newState[existingIndex].quantity + 1
+        };
+        return newState;
+      }
+      const lineId = crypto.randomUUID?.() || Date.now().toString();
+      return [
+        ...state,
+        {
+          mergeKey,
+          lineId,
+          price,
+          quantity: 1,
+          id: payload.id,
+          Title: payload.Title,
+          PosterURL: payload.PosterURL
         }
-      }
-      return newCart;
-    });
-  };
+      ];
+    }
+    case 'INCREMENT':
+      return state.map(item =>
+        item.lineId === action.id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    case 'DECREMENT':
+      return state
+        .map(item =>
+          item.lineId === action.id
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter(item => item.quantity > 0);
+    case 'REMOVE':
+      return state.filter(item => item.lineId !== action.id);
+    default:
+      return state;
+  }
+}
 
-  // Increment quantity by 1
-  const incrementItem = (id) => {
-    setCart((prevCart) => {
-      const newCart = [...prevCart];
-      const idx = newCart.findIndex((item) => item.id === id);
-      if (idx >= 0) {
-        newCart[idx].quantity += 1;
-      }
-      return newCart;
-    });
-  };
+export function CartProvider({ children }) {
+  const [cart, dispatch] = useReducer(cartReducer, initialState);
 
-  // Calculate total price
-  const getTotalPrice = () => {
-    return cart.reduce((sum, item) => {
-      const qty = item.quantity || 1;
-      const price = item.CurrentPrice || 0;
-      return sum + qty * price;
-    }, 0);
-  };
+  // Persist cart whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
-  // If you want a separate function to remove entire line item at once
-  const removeLineItem = (id) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
-  };
+  const value = useMemo(() => ({
+    cart,
+    addItem: product => dispatch({ type: 'ADD_ITEM', payload: product }),
+    addToCart: product => dispatch({ type: 'ADD_ITEM', payload: product }),
+    incrementItem: id => dispatch({ type: 'INCREMENT', id }),
+    decrementItem: id => dispatch({ type: 'DECREMENT', id }),
+    removeLineItem: id => dispatch({ type: 'REMOVE', id }),
+    getTotalItems: () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    getTotalPrice: () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  }), [cart]);
 
-  const getTotalItems = () => {
-    return cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-  };
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
 
-
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        decrementItem,
-        incrementItem,
-        removeLineItem,
-        getTotalPrice,
-        getTotalItems,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-};
-
-export const useCart = () => useContext(CartContext);
+export function useCart() {
+  const context = useContext(CartContext);
+  if (!context) throw new Error('useCart must be used within CartProvider');
+  return context;
+}

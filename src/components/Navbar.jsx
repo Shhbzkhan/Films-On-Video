@@ -14,14 +14,14 @@ const Navbar = ({ toggleSidebar, toggleCart}) => {
         </button>
       </div>
       <div className="navbar-center">
-        
+
         Films On Video
       </div>
       <div className="navbar-right">
         <div className="navbar-icons">
           <SearchBar />
           <div className="cart-icon" onClick={toggleCart}>
-            ({getTotalItems()})
+            Cart ({getTotalItems()})
             <FaShoppingCart />
           </div>
         </div>

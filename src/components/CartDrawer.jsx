@@ -1,26 +1,115 @@
-import React from "react";
-import { useCart } from "../context/CartContext";
-import "./CartDrawer.css";
+// import React from "react";
+// import { useCart } from "../context/CartContext";
+// import "./CartDrawer.css";
+
+// const CartDrawer = ({ isCartOpen, toggleCart }) => {
+//   const { cart, decrementItem, incrementItem, removeLineItem, getTotalPrice } = useCart();
+
+
+//   // Click on the overlay => close cart
+//   const handleOverlayClick = () => {
+//     toggleCart(); // closes
+//   };
+
+//   // Click inside the cart => do NOT close
+//   const handleCartClick = (e) => {
+//     e.stopPropagation();
+//   };
+
+//   return (
+//     <div className={`cart-overlay ${isCartOpen ? "open" : ""}`} onClick={handleOverlayClick}>
+//       <div className="cart-drawer" onClick={handleCartClick}>
+//         <div className="cart-drawer-header">
+//           <h2>Your Cart</h2>
+//           <button onClick={toggleCart}>X</button>
+//         </div>
+
+//         <div className="cart-drawer-body">
+//           {cart.length === 0 ? (
+//             <p>Your cart is empty.</p>
+//           ) : (
+//             cart.map((item, index) => {
+//               const qty = item.quantity || 1;
+//               const price = item.CurrentPrice || 0;
+//               return (
+//                 <div className="cart-drawer-item" key={index}>
+//                   <img
+//                     src={item.PosterURL}
+//                     alt={item.Title}
+//                     className="cart-item-image"
+//                   />
+//                   <div className="cart-item-details">
+//                     <h4>{item.Title}</h4>
+//                     <p>Price: ${price.toFixed(2)}</p>
+
+//                     {/* Quantity controls */}
+//                     <div className="qty-controls">
+//                       <button onClick={() => decrementItem(item.id)}>-</button>
+//                       <span>{qty}</span>
+//                       <button onClick={() => incrementItem(item.id)}>+</button>
+//                     </div>
+
+//                     <p>Line Total: ${(qty * price).toFixed(2)}</p>
+
+//                     {/* Remove entire line item if desired */}
+//                     <button className="remove-line" onClick={() => removeLineItem(item.id)}>
+//                       Remove Item
+//                     </button>
+//                   </div>
+//                 </div>
+//               );
+//             })
+//           )}
+//         </div>
+
+//         <div className="cart-drawer-footer">
+//           <h3>Total: ${getTotalPrice().toFixed(2)}</h3>
+//           <button className="checkout-button">Checkout</button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CartDrawer;
+
+
+
+
+
+
+
+
+// src/components/CartDrawer.jsx
+import React from 'react';
+import { useCart } from '../context/CartContext';
+import './CartDrawer.css';
 
 const CartDrawer = ({ isCartOpen, toggleCart }) => {
-  const { cart, decrementItem, incrementItem, removeLineItem, getTotalPrice } = useCart();
+  const {
+    cart,
+    incrementItem,
+    decrementItem,
+    removeLineItem,
+    getTotalPrice
+  } = useCart();
 
+  // Close overlay when clicking outside
+  const handleOverlayClick = () => toggleCart();
 
-  // Click on the overlay => close cart
-  const handleOverlayClick = () => {
-    toggleCart(); // closes
-  };
+  // Prevent overlay close when interacting with the cart
+  const handleCartClick = (e) => e.stopPropagation();
 
-  // Click inside the cart => do NOT close
-  const handleCartClick = (e) => {
-    e.stopPropagation();
-  };
+  const totalPrice = getTotalPrice();
 
   return (
-    <div className={`cart-overlay ${isCartOpen ? "open" : ""}`} onClick={handleOverlayClick}>
+    <div
+      className={`cart-overlay ${isCartOpen ? 'open' : ''}`}
+      onClick={handleOverlayClick}
+    >
       <div className="cart-drawer" onClick={handleCartClick}>
         <div className="cart-drawer-header">
-          <h2>Your Cart</h2>
+          <h2>Your Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)</h2>
           <button onClick={toggleCart}>X</button>
         </div>
 
@@ -28,31 +117,33 @@ const CartDrawer = ({ isCartOpen, toggleCart }) => {
           {cart.length === 0 ? (
             <p>Your cart is empty.</p>
           ) : (
-            cart.map((item, index) => {
-              const qty = item.quantity || 1;
-              const price = item.CurrentPrice || 0;
+            cart.map(item => {
+              const { lineId, Title, PosterURL, price, quantity } = item;
+              const lineTotal = price * quantity;
+
               return (
-                <div className="cart-drawer-item" key={index}>
+                <div className="cart-drawer-item" key={lineId}>
                   <img
-                    src={item.PosterURL}
-                    alt={item.Title}
+                    src={PosterURL}
+                    alt={Title}
                     className="cart-item-image"
                   />
                   <div className="cart-item-details">
-                    <h4>{item.Title}</h4>
+                    <h4>{Title}</h4>
                     <p>Price: ${price.toFixed(2)}</p>
 
-                    {/* Quantity controls */}
                     <div className="qty-controls">
-                      <button onClick={() => decrementItem(item.id)}>-</button>
-                      <span>{qty}</span>
-                      <button onClick={() => incrementItem(item.id)}>+</button>
+                      <button onClick={() => decrementItem(lineId)}>-</button>
+                      <span>{quantity}</span>
+                      <button onClick={() => incrementItem(lineId)}>+</button>
                     </div>
 
-                    <p>Line Total: ${(qty * price).toFixed(2)}</p>
+                    <p>Item Total: ${lineTotal.toFixed(2)}</p>
 
-                    {/* Remove entire line item if desired */}
-                    <button className="remove-line" onClick={() => removeLineItem(item.id)}>
+                    <button
+                      className="remove-line"
+                      onClick={() => removeLineItem(lineId)}
+                    >
                       Remove Item
                     </button>
                   </div>
@@ -63,7 +154,7 @@ const CartDrawer = ({ isCartOpen, toggleCart }) => {
         </div>
 
         <div className="cart-drawer-footer">
-          <h3>Total: ${getTotalPrice().toFixed(2)}</h3>
+          <h3>Total: ${totalPrice.toFixed(2)}</h3>
           <button className="checkout-button">Checkout</button>
         </div>
       </div>
@@ -72,3 +163,8 @@ const CartDrawer = ({ isCartOpen, toggleCart }) => {
 };
 
 export default CartDrawer;
+
+
+
+
+
