@@ -22,6 +22,13 @@ import Login from "./components/Login";
 import About from "./components/About";
 import supabase from './supabaseClient';
 
+// Admin imports
+import RequireAdmin from './components/RequireAdmin';       // protects /admin
+import AdminDashboard from './admin/AdminDashboard';
+import ItemList from './admin/ItemList';
+import NewItemForm from './admin/NewItemForm';
+import EditItemForm from './admin/EditItemForm';
+
 
 
 
@@ -78,6 +85,21 @@ function App() {
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="/login" element={<Login />} />
             <Route path="/about" element={<About />} />
+
+            {/* Admin Section */}
+            <Route
+              path="/admin/*"
+              element={
+                <RequireAdmin>
+                  <AdminDashboard />
+                </RequireAdmin>
+              }
+            >
+              <Route index element={<ItemList />} />
+              <Route path="items" element={<ItemList />} />
+              <Route path="items/new" element={<NewItemForm />} />
+              <Route path="items/:id/edit" element={<EditItemForm />} />
+            </Route>
           </Routes>
         </div>
 

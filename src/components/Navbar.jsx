@@ -1,5 +1,6 @@
 import React from "react";
 import { useCart } from "../context/CartContext";
+import { Link } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa"; // Using react-icons for cart
 import "./Navbar.css";
 import SearchBar from "./SearchBar";
@@ -19,6 +20,7 @@ const Navbar = ({ toggleSidebar, toggleCart}) => {
       </div>
       <div className="navbar-right">
         <div className="navbar-icons">
+          <Link to="/login" className="login-link">Login</Link>
           <SearchBar />
           <div className="cart-icon" onClick={toggleCart}>
             Cart ({getTotalItems()})

@@ -1,48 +1,84 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import supabase from "../supabaseClient";
 
-// Suppose you have an AuthContext or just localStorage for simplicity
-const Login = () => {
+export default function Login() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  
-  const handleLogin = (e) => {
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Very basic check: 
-    if (username === "admin" && password === "1234") {
-      localStorage.setItem("isAdmin", "true");
-      navigate("/"); // or wherever you want
+    setError("");
+    setLoading(true);
+
+    // 1️⃣ Sign in with Supabase
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    // data may contain session.user, or we can fetch the user again
+    const user = data.user ?? data.session?.user;
+
+    if (!user) {
+      setError("Could not retrieve user session.");
+      setLoading(false);
+      return;
+    }
+
+    // 2️⃣ Check their metadata.role
+    const role = user.user_metadata?.role;
+
+    // 3️⃣ Redirect based on role
+    if (role === "admin") {
+      navigate("/admin", { replace: true });
     } else {
-      alert("Invalid credentials");
+      navigate("/", { replace: true });
     }
   };
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h2>Admin Login</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Username:</label>{" "}
-          <input 
-            type="text"
-            value={username}
-            onChange={(e)=> setUsername(e.target.value)}
+    <div style={{ maxWidth: 400, margin: "2rem auto", padding: "1rem", border: "1px solid #ccc" }}>
+      <h2>Sign In</h2>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{ width: "100%", margin: "0.5rem 0" }}
           />
-        </div>
-        <div>
-          <label>Password:</label>{" "}
-          <input 
+        </label>
+
+        <label>
+          Password
+          <input
             type="password"
             value={password}
-            onChange={(e)=> setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ width: "100%", margin: "0.5rem 0" }}
           />
-        </div>
-        <button type="submit">Login</button>
+        </label>
+
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <button type="submit" disabled={loading} style={{ marginTop: "1rem" }}>
+          {loading ? "Signing In…" : "Sign In"}
+        </button>
       </form>
     </div>
   );
-};
-
-export default Login;
+}
