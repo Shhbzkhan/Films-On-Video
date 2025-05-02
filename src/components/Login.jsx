@@ -1,6 +1,6 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";  // ← added Link
 import supabase from "../supabaseClient";
 
 export default function Login() {
@@ -48,8 +48,24 @@ export default function Login() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "2rem auto", padding: "1rem", border: "1px solid #ccc" }}>
+    <div
+      style={{
+        maxWidth: 400,
+        margin: "2rem auto",
+        padding: "1rem",
+        border: "1px solid #ccc",
+      }}
+    >
       <h2>Sign In</h2>
+
+      {/* New prompt for users to register */}
+      <p style={{ textAlign: "center", marginBottom: "1rem" }}>
+        Don’t have an account?{" "}
+        <Link to="/register" style={{ color: "#1e516d", textDecoration: "underline" }}>
+          Register here
+        </Link>
+      </p>
+
       <form onSubmit={handleSubmit}>
         <label>
           Email
