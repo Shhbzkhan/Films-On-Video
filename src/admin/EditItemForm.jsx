@@ -1,45 +1,108 @@
-// Layout + sidebar + nav
-
-/* src/admin/EditItemForm.jsx */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useUpdateItem, useItems } from './useAdminData';
+import supabase from '../supabaseClient';
+import './EditItemForm.css';
 
 export default function EditItemForm() {
-  const { id } = useParams();
-  const { items, loading, error } = useItems();
-  const updateItem = useUpdateItem();
+  const { RegSerialNo } = useParams();          // now named RegSerialNo
+  const id = parseInt(RegSerialNo, 10);
   const navigate = useNavigate();
-  const [form, setForm] = useState({ Title: '', CurrentPrice: '', PosterURL: '' });
+
+  const [form, setForm] = useState({
+    Title: '', CurrentPrice: '', Year: '',
+    Quantity: '', Description: '', PosterURL: '',
+    Disc: '', Type: '', Genres: '', Director: '', Cast: ''
+  });
+  const [loading, setLoading]     = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError]         = useState('');
 
   useEffect(() => {
-    if (!loading) {
-      const item = items.find(it => it.id === (isNaN(id) ? id : parseInt(id,10)));
-      if (item) setForm({ Title: item.Title, CurrentPrice: item.CurrentPrice, PosterURL: item.PosterURL });
+    if (isNaN(id)) return;
+    supabase
+      .from('Regular_titles')
+      .select('*')
+      .eq('RegSerialNo', id)
+      .single()
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setForm({
+          Title: data.Title || '',
+          CurrentPrice: data.CurrentPrice?.toString() || '',
+          Year: data['Release Year'] || '',
+          Quantity: data.QtyToList?.toString() || '',
+          Description: data.Description || '',
+          PosterURL: data.PosterURL || '',
+          Disc: data.Disc || '',
+          Type: data.Type || '',
+          Genres: data.Genres || '',
+          Director: data.Director || '',
+          Cast: data.Cast || ''
+        });
+      });
+  }, [id]);
+
+  const onChange = e => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
+
+  const onFileChange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const fileName = `${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage.from('posters').upload(fileName, file);
+    if (error) setError(error.message);
+    else {
+      const { publicUrl } = supabase.storage.from('posters').getPublicUrl(data.path);
+      setForm(f => ({ ...f, PosterURL: publicUrl }));
     }
-  }, [loading, items, id]);
+    setUploading(false);
+  };
 
-  if (loading) return <div>Loading...</div>;
-  if (error)   return <div>Error loading item.</div>;
-
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
   const handleSubmit = async e => {
     e.preventDefault();
-    try {
-      await updateItem(id, form);
-      navigate('/admin/items');
-    } catch {
-      alert('Failed to update item.');
-    }
+    setLoading(true);
+    const updates = {
+      Title: form.Title,
+      CurrentPrice: parseFloat(form.CurrentPrice),
+      ['Release Year']: form.Year,
+      QtyToList: parseInt(form.Quantity, 10),
+      Description: form.Description,
+      PosterURL: form.PosterURL,
+      Disc: form.Disc,
+      Type: form.Type,
+      Genres: form.Genres,
+      Director: form.Director,
+      Cast: form.Cast
+    };
+    const { error: updateError } = await supabase
+      .from('Regular_titles')
+      .update(updates)
+      .eq('RegSerialNo', id);
+    if (updateError) setError(updateError.message);
+    else navigate('/admin/items', { replace: true });
+    setLoading(false);
   };
 
   return (
-    <form className="admin-form" onSubmit={handleSubmit}>
-      <h2>Edit Item</h2>
-      <label>Title<input name="Title" value={form.Title} onChange={handleChange} required /></label>
-      <label>Price<input name="CurrentPrice" type="number" step="0.01" value={form.CurrentPrice} onChange={handleChange} required /></label>
-      <label>Poster URL<input name="PosterURL" value={form.PosterURL} onChange={handleChange} /></label>
-      <button type="submit">Save Changes</button>
-    </form>
+    <div className="edit-form-container">
+      <h2>Edit Movie #{id}</h2>
+      {error && <p className="error-text">{error}</p>}
+      <form onSubmit={handleSubmit} className="edit-form">
+        {/* same form rows */}
+        {/* … */}
+        <div className="form-actions">
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button type="button" className="btn btn-secondary"
+                  onClick={() => navigate('/admin/items')} disabled={loading}>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

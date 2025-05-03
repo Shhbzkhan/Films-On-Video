@@ -19,7 +19,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    // 1) Client‐side validation
+    // 1️⃣ Client-side validation
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -31,31 +31,29 @@ export default function Register() {
 
     setLoading(true);
 
-    // 2) Sign up the user
-    //    If email confirmations are enabled, `data.session` will be null.
-    const { data: signUpData, error: signUpError } =
-      await supabase.auth.signUp({ email, password });
-
+    // 2️⃣ Sign up the user, with redirect back to /login after email confirm
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
+      { email, password },
+      { redirectTo: `${window.location.origin}/login` }
+    );
     if (signUpError) {
       setError(signUpError.message);
       setLoading(false);
       return;
     }
 
-    // 3) If no session returned, email confirmation is required
+    // 3️⃣ If no session returned, email confirmation is required → stop here
     if (!signUpData.session) {
       alert(
-        "Registration successful! Please check your email to confirm your account before logging in."
+        "Registration successful! Please check your email to confirm your account, then log in."
       );
       setLoading(false);
       navigate("/login", { replace: true });
       return;
     }
 
-    // 4) We got a session back → user is already confirmed/auto-logged-in.
+    // 4️⃣ We have a session (i.e. confirmations disabled) → insert profile
     const userId = signUpData.session.user.id;
-
-    // 5) Insert the customer profile
     const { error: profileError } = await supabase
       .from("customers")
       .insert([
@@ -73,9 +71,9 @@ export default function Register() {
       return;
     }
 
-    // 6) Done!
+    // 5️⃣ Done! Navigate to login or home
     setLoading(false);
-    navigate("/", { replace: true });
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -94,7 +92,7 @@ export default function Register() {
           <input
             type="text"
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={e => setFirstName(e.target.value)}
             required
             style={{ width: "100%", margin: "0.5rem 0" }}
           />
@@ -105,7 +103,7 @@ export default function Register() {
           <input
             type="text"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={e => setLastName(e.target.value)}
             required
             style={{ width: "100%", margin: "0.5rem 0" }}
           />
@@ -116,7 +114,7 @@ export default function Register() {
           <input
             type="date"
             value={dateOfBirth}
-            onChange={(e) => setDateOfBirth(e.target.value)}
+            onChange={e => setDateOfBirth(e.target.value)}
             required
             style={{ width: "100%", margin: "0.5rem 0" }}
           />
@@ -127,7 +125,7 @@ export default function Register() {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             required
             style={{ width: "100%", margin: "0.5rem 0" }}
           />
@@ -138,7 +136,7 @@ export default function Register() {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
             style={{ width: "100%", margin: "0.5rem 0" }}
           />
@@ -149,7 +147,7 @@ export default function Register() {
           <input
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={e => setConfirmPassword(e.target.value)}
             required
             style={{ width: "100%", margin: "0.5rem 0" }}
           />

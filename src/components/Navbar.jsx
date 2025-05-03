@@ -15,9 +15,11 @@ const Navbar = ({ toggleSidebar, toggleCart}) => {
         </button>
       </div>
       <div className="navbar-center">
-
-        Films On Video
+        <Link to="/" className="navbar-logo">
+          Films On Video
+        </Link>
       </div>
+      
       <div className="navbar-right">
         <div className="navbar-icons">
           <Link to="/login" className="login-link">Login</Link>
