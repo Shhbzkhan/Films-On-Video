@@ -1,130 +1,127 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './ItemList.css'; // add any styles you need
+import supabase from '../supabaseClient';
+import './ItemList.css'; // your existing styles
 
 const ItemList = () => {
-  // 1) All items (could come from props or fetched from an API)
-  const [items, setItems] = useState([]);
-  // 2) Search term
-  const [searchTerm, setSearchTerm] = useState('');
-  // 3) Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [searchTerm, setSearch] = useState('');
+  const [currentPage, setPage]  = useState(1);
+  const itemsPerPage            = 10;
 
-  // Example fetch – replace with your real data source
+  // 1) Load data
   useEffect(() => {
-    async function fetchItems() {
-      // e.g. const { data } = await supabase.from('YourTable').select('*');
-      const data = [
-        /* mock data: { serialno, name, ... } */
-      ];
-      setItems(data);
+    async function load() {
+      const { data, error } = await supabase
+        .from('Regular_titles')
+        .select('*')
+        .order('RegSerialNo', { ascending: false });
+      console.log('⚙️ data:', data, 'error:', error);
+      if (!error) setItems(data);
+      setLoading(false);
     }
-    fetchItems();
+    load();
   }, []);
 
-  // Filter by search term
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
+  if (loading) return <div>Loading items…</div>;
+
+  // 2) Filter by title
+  const filtered = items.filter(item =>
+    item.Title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination calculations
-  const totalItems = filteredItems.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const idxLast  = currentPage * itemsPerPage;
-  const idxFirst = idxLast - itemsPerPage;
-  const currentItems = filteredItems.slice(idxFirst, idxLast);
+  // 3) Pagination slice
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePageChange = page => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+  // 4) Change page
+  const goPage = (n) => {
+    if (n >= 1 && n <= totalPages) {
+      setPage(n);
       window.scrollTo(0, 0);
     }
   };
-  const handleFirst = () => handlePageChange(1);
-  const handleLast  = () => handlePageChange(totalPages);
-  const handlePrev  = () => handlePageChange(currentPage - 1);
-  const handleNext  = () => handlePageChange(currentPage + 1);
-
-  // Build array of page numbers (max 5 at a time)
-  const maxPages = 5;
-  let start = Math.max(1, currentPage - Math.floor(maxPages/2));
-  let end   = start + maxPages - 1;
-  if (end > totalPages) {
-    end = totalPages;
-    start = Math.max(1, end - maxPages + 1);
-  }
-  const pageNumbers = [];
-  for (let i = start; i <= end; i++) pageNumbers.push(i);
 
   return (
-    <div className="item-list-admin">
-      <div className="item-list-header">
-        <h2>Manage Items</h2>
+    <div className="item-list-container">
+      <div className="list-header">
+        <Link to="/admin/items/new" className="btn">+ Add New Regular Item</Link>
         <input
           type="text"
-          placeholder="Search items..."
+          placeholder="Search by title…"
           value={searchTerm}
           onChange={e => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
+            setSearch(e.target.value);
+            setPage(1);
           }}
-          className="search-input"
         />
-        <Link to="items/new" className="btn-new">
-          + New Item
-        </Link>
       </div>
 
       <table className="item-table">
         <thead>
           <tr>
-            <th>Serial No</th>
-            <th>Name</th>
-            <th>Actions</th>
+            <th>RegSerialNo</th><th>ProductID</th><th>QtyToList</th><th>Title</th>
+            <th>Release Year</th><th>Disc</th><th>Type</th><th>CurrentPrice</th>
+            <th>Description</th><th>PosterURL</th><th>Genres</th><th>Director</th>
+            <th>Cast</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {currentItems.map(item => (
-            <tr key={item.serialno}>
-              <td>{item.serialno}</td>
-              <td>{item.name}</td>
+            <tr key={item.RegSerialNo}>
+              <td>{item.RegSerialNo}</td>
+              <td>{item.ProductID}</td>
+              <td>{item.QtyToList}</td>
+              <td>{item.Title}</td>
+              <td>{item['Release Year']}</td>
+              <td>{item.Disc}</td>
+              <td>{item.Type}</td>
+              <td>{item.CurrentPrice}</td>
+              <td>{item.Description}</td>
+              <td><a href={item.PosterURL} target="_blank">View</a></td>
+              <td>{item.Genres}</td>
+              <td>{item.Director}</td>
+              <td>{item.Cast}</td>
               <td>
-                <Link to={`items/${item.serialno}/edit`}>Edit</Link>
+                <Link to={`/admin/items/${item.RegSerialNo}/edit`} className="btn-sm">Edit</Link>
+                <button
+                  className="btn-sm danger"
+                  onClick={async () => {
+                    await supabase
+                      .from('Regular_titles')
+                      .delete()
+                      .eq('RegSerialNo', item.RegSerialNo);
+                    // reload
+                    setItems(items.filter(i => i.RegSerialNo !== item.RegSerialNo));
+                  }}
+                >Delete</button>
               </td>
             </tr>
           ))}
-          {currentItems.length === 0 && (
-            <tr>
-              <td colSpan="3">No items found.</td>
-            </tr>
-          )}
         </tbody>
       </table>
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination-admin">
-          <button onClick={handleFirst} disabled={currentPage === 1}>
-            First
-          </button>
-          <button onClick={handlePrev} disabled={currentPage === 1}>
-            Prev
-          </button>
-          {pageNumbers.map(num => (
-            <button
-              key={num}
-              onClick={() => handlePageChange(num)}
-              className={num === currentPage ? 'active' : ''}
-            >
-              {num}
-            </button>
-          ))}
-          <button onClick={handleNext} disabled={currentPage === totalPages}>
-            Next
-          </button>
-          <button onClick={handleLast} disabled={currentPage === totalPages}>
-            Last
-          </button>
+        <div className="pagination">
+          <button onClick={() => goPage(1)} disabled={currentPage === 1}>First</button>
+          <button onClick={() => goPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
+          {[...Array(totalPages)].map((_, i) => {
+            const p = i + 1;
+            return (
+              <button
+                key={p}
+                className={p === currentPage ? 'active' : ''}
+                onClick={() => goPage(p)}
+              >
+                {p}
+              </button>
+            );
+          })}
+          <button onClick={() => goPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+          <button onClick={() => goPage(totalPages)} disabled={currentPage === totalPages}>Last</button>
         </div>
       )}
     </div>

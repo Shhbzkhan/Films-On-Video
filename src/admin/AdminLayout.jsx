@@ -8,8 +8,8 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <h2>Admin</h2>
         <nav>
-          <Link to="items">All Items</Link>
-          <Link to="items/new">New Item</Link>
+          <Link to="items">Regular Items</Link>
+          <Link to="adult/items">Adult Items</Link>
         </nav>
       </aside>
       <section className="admin-content">
