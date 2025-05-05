@@ -1,4 +1,4 @@
-// src/context/AuthContext.js
+// src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from "react";
 import supabase from "../supabaseClient";
 

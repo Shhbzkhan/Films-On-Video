@@ -117,6 +117,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 //import supabase from './supabaseClient';
 
 // Customer imports
@@ -135,13 +136,14 @@ import NewArrivals    from './components/NewArrivals';
 import StaffPicks     from './components/StaffPicks';
 import ComingSoon     from './components/ComingSoon';
 import OtherServices  from './components/OtherServices';
+import Orders from './components/Orders';
 import SearchResults  from './components/SearchResults';
 import Contact        from './components/Contact';
 import About          from './components/About';
 import Login          from './components/Login';
 import Register       from './components/Register';
 import RequireAuth    from './components/RequireAuth';
-import ForgotPassword from './components/ForgotPassword';
+//import ForgotPassword from './components/ForgotPassword';
 
 // Admin imports
 import RequireAdmin      from './components/RequireAdmin';
@@ -158,75 +160,77 @@ function App() {
   const [isCartOpen, setCartOpen]       = useState(false);
 
   return (
-    <CartProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Customer portal */}
-          <Route
-            element={
-              <CustomerLayout
-                isSidebarOpen={isSidebarOpen}
-                toggleSidebar={() => setSidebarOpen(v => !v)}
-                isCartOpen={isCartOpen}
-                toggleCart={() => setCartOpen(v => !v)}
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Customer portal */}
+            <Route
+              element={
+                <CustomerLayout
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={() => setSidebarOpen(v => !v)}
+                  isCartOpen={isCartOpen}
+                  toggleCart={() => setCartOpen(v => !v)}
+                />
+              }
+            >
+              <Route path="/" element={<Home />} />
+              <Route path="account" element={<Account />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="movies" element={<RegularMovies />} />
+              <Route path="movies/:index" element={<RegularMovieDetail />} />
+              <Route path="adult-movies" element={<AdultMovies />} />
+              <Route path="adult-movies/:index" element={<AdultMovieDetail />} />
+              <Route path="new-arrivals" element={<NewArrivals />} />
+              <Route path="staff-picks" element={<StaffPicks />} />
+              <Route path="/coming-soon" element={<ComingSoon />} />
+              <Route path="other-services" element={<OtherServices />} />
+              <Route path="search" element={<SearchResults />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="about" element={<About />} />
+
+              {/* Public auth routes */}
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+
+              {/* Protected customer-only */}
+              <Route
+                path="account"
+                element={
+                  <RequireAuth>
+                    {/* <Account /> */}
+                  </RequireAuth>
+                }
               />
-            }
-          >
-            <Route path="/" element={<Home />} />
-            <Route path="account" element={<Account/>} />
-            <Route path="orders" element={<Orders/>} />
-            <Route path="movies" element={<RegularMovies />} />
-            <Route path="movies/:index" element={<RegularMovieDetail />} />
-            <Route path="adult-movies" element={<AdultMovies />} />
-            <Route path="adult-movies/:index" element={<AdultMovieDetail />} />
-            <Route path="new-arrivals" element={<NewArrivals/>} />
-            <Route path="staff-picks"  element={<StaffPicks/>} />
-            <Route path="/coming-soon" element={<ComingSoon/>} />
-            <Route path="other-services" element={<OtherServices/>} />
-            <Route path="search" element={<SearchResults />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="about" element={<About />} />
+              <Route
+                path="orders"
+                element={
+                  <RequireAuth>
+                    {/* <Orders /> */}
+                  </RequireAuth>
+                }
+              />
+            </Route>
 
-            {/* Public auth routes */}
-            <Route path="login"    element={<Login />} />
-            <Route path="register" element={<Register />} />
-
-            {/* Protected customer-only */}
+            {/* Admin portal */}
             <Route
-              path="account"
+              path="admin/*"
               element={
-                <RequireAuth>
-                  {/* <Account /> */}
-                </RequireAuth>
+                <RequireAdmin>
+                  <AdminLayout />
+                </RequireAdmin>
               }
-            />
-            <Route
-              path="orders"
-              element={
-                <RequireAuth>
-                  {/* <Orders /> */}
-                </RequireAuth>
-              }
-            />
-          </Route>
-
-          {/* Admin portal */}
-          <Route
-            path="admin/*"
-            element={
-              <RequireAdmin>
-                <AdminLayout />
-              </RequireAdmin>
-            }
-          >
-            <Route index element={<ItemList />} />
-            <Route path="items"      element={<ItemList />} />
-            <Route path="items/new"  element={<NewItemForm />} />
-            <Route path="items/:serialno/edit" element={<EditItemForm />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </CartProvider>
+            >
+              <Route index element={<ItemList />} />
+              <Route path="items" element={<ItemList />} />
+              <Route path="items/new" element={<NewItemForm />} />
+              <Route path="items/:serialno/edit" element={<EditItemForm />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>    
   );
 }
 
