@@ -17,7 +17,7 @@ const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 async function run() {
   const userId = process.argv[2];
   if (!userId) {
-    console.error('Usage: node scripts/promoteUser.js <user-uuid>');
+    console.error('Usage: node scripts/promoteUser.js <a8655243-1880-48fa-8cc1-4037d5a2ecdc>');
     process.exit(1);
   }
 

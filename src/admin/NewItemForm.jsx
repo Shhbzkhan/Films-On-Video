@@ -5,10 +5,27 @@ import './NewItemForm.css';
 
 export default function NewItemForm() {
   const navigate = useNavigate();
+  const [category, setCategory] = useState(null);
   const [form, setForm] = useState({
-    Title: '', CurrentPrice: '', Year: '',
-    Quantity: '', Description: '', PosterURL: '', Disc: '', Type: '',
-    Genres: '', Director: '', Cast: ''
+    ProductID: '',
+    // Regular-only fields:
+    QtyToList: '',
+    Title: '',
+    Year: '',
+    Disc: '',
+    Type: '',
+    CurrentPrice: '',
+    Description: '',
+    Genres: '',
+    Director: '',
+    Cast: '',
+    // Adult-only fields:
+    Condition: '',
+    Price: '',
+    Quantity: '',
+    Production: '',
+    ReleaseDate: '',
+    PosterURL: '',
   });
   const [loading, setLoading]     = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -36,41 +53,184 @@ export default function NewItemForm() {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    const newItem = {
-      Title: form.Title,
-      CurrentPrice: parseFloat(form.CurrentPrice),
-      ['Release Year']: form.Year,
-      QtyToList: parseInt(form.Quantity, 10),
-      Description: form.Description,
-      PosterURL: form.PosterURL,
-      Disc: form.Disc,
-      Type: form.Type,
-      Genres: form.Genres,
-      Director: form.Director,
-      Cast: form.Cast
-      // no need to set RegSerialNo — DB will assign via sequence
-    };
-    const { error: insertError } = await supabase
-      .from('Regular_titles')
-      .insert([newItem]);
-    if (insertError) setError(insertError.message);
-    else navigate('/admin/items', { replace: true });
-    setLoading(false);
+
+    // assemble payload & target
+    let table, redirect, payload;
+    if (category === 'regular') {
+      table = 'Regular_titles';
+      redirect = '/admin/items';
+      payload = {
+        ProductID: form.ProductID,
+        QtyToList: parseInt(form.QtyToList, 10),
+        Title: form.Title,
+        ['Release Year']: form.Year,
+        Disc: form.Disc,
+        Type: form.Type,
+        CurrentPrice: parseFloat(form.CurrentPrice),
+        Description: form.Description,
+        PosterURL: form.PosterURL,
+        Genres: form.Genres,
+        Director: form.Director,
+        Cast: form.Cast,
+      };
+    } else {
+      table = 'Adult_titles';
+      redirect = '/admin/adult/items';
+      payload = {
+        ProductID: parseInt(form.ProductID, 10),
+        Condition: form.Condition,
+        Price: parseFloat(form.Price),
+        Quantity: parseInt(form.Quantity, 10),
+        Title: form.Title,
+        Production: form.Production,
+        ['Release Date']: form.ReleaseDate,
+        PosterURL: form.PosterURL,
+      };
+    }
+
+    const { error: insertError } = await supabase.from(table).insert([payload]);
+    if (insertError) {
+      setError(insertError.message);
+      setLoading(false);
+    } else {
+      navigate(redirect, { replace: true });
+    }
   };
+
+  if (!category) {
+    return (
+      <div className="category-select-container">
+        <h2>Select Category</h2>
+        <div className="category-buttons">
+          <button className="btn" onClick={() => setCategory('regular')}>
+            Regular Titles
+          </button>
+          <button className="btn" onClick={() => setCategory('adult')}>
+            Adult Titles
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="edit-form-container">
-      <h2>Add New Regular Movie</h2>
+      <h2>Add New {category === 'regular' ? 'Regular' : 'Adult'} Movie</h2>
       {error && <p className="error-text">{error}</p>}
       <form onSubmit={handleSubmit} className="edit-form">
-        {/* same form rows as EditItemForm for each field */}
-        {/* … */}
+        {/* shared ProductID */}
+        <div className="form-row">
+          <label>Product ID</label>
+          <input name="ProductID" value={form.ProductID} onChange={onChange} required />
+        </div>
+
+        {category === 'regular' ? (
+          <>
+            {/* Regular-only fields */}
+            <div className="form-row">
+              <label>Qty To List</label>
+              <input type="number" name="QtyToList" value={form.QtyToList} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Title</label>
+              <input name="Title" value={form.Title} onChange={onChange} required />
+            </div>
+            <div className="form-row">
+              <label>Release Year</label>
+              <input name="Year" value={form.Year} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Disc</label>
+              <input name="Disc" value={form.Disc} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Type</label>
+              <input name="Type" value={form.Type} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Current Price ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                name="CurrentPrice"
+                value={form.CurrentPrice}
+                onChange={onChange}
+              />
+            </div>
+            <div className="form-row">
+              <label>Description</label>
+              <textarea name="Description" rows="3" value={form.Description} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Genres</label>
+              <input name="Genres" value={form.Genres} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Director</label>
+              <input name="Director" value={form.Director} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Cast</label>
+              <input name="Cast" value={form.Cast} onChange={onChange} />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Adult-only fields */}
+            <div className="form-row">
+              <label>Condition</label>
+              <input name="Condition" value={form.Condition} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Price ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                name="Price"
+                value={form.Price}
+                onChange={onChange}
+              />
+            </div>
+            <div className="form-row">
+              <label>Quantity</label>
+              <input type="number" name="Quantity" value={form.Quantity} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Title</label>
+              <input name="Title" value={form.Title} onChange={onChange} required />
+            </div>
+            <div className="form-row">
+              <label>Production</label>
+              <input name="Production" value={form.Production} onChange={onChange} />
+            </div>
+            <div className="form-row">
+              <label>Release Date</label>
+              <input name="Release Date" value={form.ReleaseDate} onChange={onChange} />
+            </div>
+          </>
+        )}
+
+        {/* Poster Upload */}
+        <div className="form-row">
+          <label>Poster Image</label>
+          <input type="file" accept="image/*" onChange={onFileChange} />
+          {uploading && <small>Uploading…</small>}
+          {form.PosterURL && (
+            <img src={form.PosterURL} alt="Preview" className="poster-preview" />
+          )}
+        </div>
+
+        {/* Actions */}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Adding…' : 'Add Movie'}
           </button>
-          <button type="button" className="btn btn-secondary"
-                  onClick={() => navigate('/admin/items')} disabled={loading}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => navigate(category === 'adult' ? '/admin/adult/items' : '/admin/items')}
+            disabled={loading}
+          >
             Cancel
           </button>
         </div>

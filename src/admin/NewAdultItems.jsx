@@ -1,92 +1,125 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
-import './NewItemForm.css';
+import './ItemList.css';
 
-export default function NewAdultItemForm() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    Title: '', CurrentPrice: '', Year: '',
-    Quantity: '', Description: '', PosterURL: '', Disc: '', Type: '',
-    Genres: '', Director: '', Cast: ''
-  });
-  const [loading, setLoading]     = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError]         = useState('');
+export default function AdultItemList() {
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [searchTerm, setSearch] = useState('');
+  const [currentPage, setPage]  = useState(1);
+  const itemsPerPage            = 10;
 
-  const onChange = e => {
-    const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
-  };
-
-  const onFileChange = async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    const fileName = `${Date.now()}_${file.name}`;
-    const { data, error } = await supabase
-      .storage
-      .from('posters')
-      .upload(fileName, file);
-    if (error) {
-      setError(error.message);
-    } else {
-      const { publicUrl } = supabase
-        .storage
-        .from('posters')
-        .getPublicUrl(data.path);
-      setForm(f => ({ ...f, PosterURL: publicUrl }));
-    }
-    setUploading(false);
-  };
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true);
-    const newItem = {
-      Title: form.Title,
-      CurrentPrice: parseFloat(form.CurrentPrice),
-      ['Release Year']: form.Year,
-      QtyToList: parseInt(form.Quantity, 10),
-      Description: form.Description,
-      PosterURL: form.PosterURL,
-      Disc: form.Disc,
-      Type: form.Type,
-      Genres: form.Genres,
-      Director: form.Director,
-      Cast: form.Cast
-      // AdultSerialNo will be auto‐assigned by your sequence
-    };
-
-    const { error: insertError } = await supabase
+  useEffect(() => {
+    supabase
       .from('Adult_titles')
-      .insert([newItem]);
+      .select('*')
+      .order('AdultSerialNo', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error) setItems(data);
+        setLoading(false);
+      });
+  }, []);
 
-    if (insertError) {
-      setError(insertError.message);
-    } else {
-      navigate('/admin/adult/items', { replace: true });
+  if (loading) return <div>Loading adult items…</div>;
+
+  const filtered    = items.filter(i => i.Title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const totalPages  = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex  = (currentPage - 1) * itemsPerPage;
+  const currentItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+  const goPage = n => {
+    if (n >= 1 && n <= totalPages) {
+      setPage(n);
+      window.scrollTo(0, 0);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="edit-form-container">
-      <h2>Add New Adult Movie</h2>
-      {error && <p className="error-text">{error}</p>}
-      <form onSubmit={handleSubmit} className="edit-form">
-        {/* reuse same form rows: Title, CurrentPrice, Release Year, etc. */}
-        {/* … */}
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Adding…' : 'Add Movie'}
-          </button>
-          <button type="button" className="btn btn-secondary"
-                  onClick={() => navigate('/admin/adult/items')} disabled={loading}>
-            Cancel
-          </button>
+    <div className="item-list-container">
+      <div className="list-header">
+        <Link to="/admin/adult/items/new" className="btn add-new">
+          + Add New Adult Item
+        </Link>
+        <input
+          type="text"
+          placeholder="Search by title…"
+          value={searchTerm}
+          onChange={e => { setSearch(e.target.value); setPage(1); }}
+        />
+      </div>
+
+      <table className="item-table">
+        <thead>
+          <tr>
+            <th>Adult#</th>
+            <th>ProductID</th>
+            <th>Condition</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Title</th>
+            <th>Production</th>
+            <th>Release Date</th>
+            <th>Poster</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentItems.map(item => (
+            <tr key={item.AdultSerialNo}>
+              <td>{item.AdultSerialNo}</td>
+              <td>{item.ProductID}</td>
+              <td>{item.Condition}</td>
+              <td>${item.Price.toFixed(2)}</td>
+              <td>{item.Quantity}</td>
+              <td>{item.Title}</td>
+              <td>{item.Production}</td>
+              <td>{item['Release Date']}</td>
+              <td>
+                {item.PosterURL
+                  ? <img src={item.PosterURL} alt={item.Title} className="poster-thumb" />
+                  : <span className="no-image">—</span>
+                }
+              </td>
+              <td>
+                <Link to={`/admin/adult/items/${item.AdultSerialNo}/edit`} className="btn-sm">
+                  Edit
+                </Link>
+                <button
+                  className="btn-sm danger"
+                  onClick={async () => {
+                    await supabase
+                      .from('Adult_titles')
+                      .delete()
+                      .eq('AdultSerialNo', item.AdultSerialNo);
+                    setItems(items.filter(i => i.AdultSerialNo !== item.AdultSerialNo));
+                  }}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button onClick={() => goPage(1)} disabled={currentPage === 1}>First</button>
+          <button onClick={() => goPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i+1}
+              className={currentPage === i+1 ? 'active' : ''}
+              onClick={() => goPage(i+1)}
+            >
+              {i+1}
+            </button>
+          ))}
+          <button onClick={() => goPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+          <button onClick={() => goPage(totalPages)} disabled={currentPage === totalPages}>Last</button>
         </div>
-      </form>
+      )}
     </div>
   );
 }
