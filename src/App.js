@@ -117,17 +117,17 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+//import supabase from './supabaseClient';
 
 // Customer imports
 import CustomerLayout from './layouts/CustomerLayout1';
-import Navbar         from './components/Navbar';
-import Sidebar        from './components/Sidebar';
-import CartDrawer     from './components/CartDrawer';
-import Footer         from './components/Footer';
-import Home           from './components/Home';
-import Account        from './components/Account';
-import Orders         from './components/Orders';
-import RegularMovies  from './components/RegularMovies';
+import Home from './components/Home';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Sidebar from './components/Sidebar';
+import CartDrawer from './components/CartDrawer';
+import Account from './components/Account';
+import RegularMovies from './components/RegularMovies';
 import RegularMovieDetail from './components/RegularMovieDetail';
 import AdultMovies    from './components/AdultMovies';
 import AdultMovieDetail  from './components/AdultMoviesDetail';
@@ -160,11 +160,6 @@ function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        {/* Global navbar, sidebar, cart */}
-        <Navbar toggleSidebar={() => setSidebarOpen(v => !v)} toggleCart={() => setCartOpen(v => !v)} />
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setSidebarOpen(v => !v)} />
-        <CartDrawer isCartOpen={isCartOpen} toggleCart={() => setCartOpen(v => !v)} />
-
         <Routes>
           {/* Customer portal */}
           <Route
@@ -178,34 +173,41 @@ function App() {
             }
           >
             <Route path="/" element={<Home />} />
-            <Route path="account" element={
-              <RequireAuth>
-                <Account />
-              </RequireAuth>
-            } />
-            <Route path="orders" element={
-              <RequireAuth>
-                <Orders />
-              </RequireAuth>
-            } />
-
+            <Route path="account" element={<Account/>} />
+            <Route path="orders" element={<Orders/>} />
             <Route path="movies" element={<RegularMovies />} />
             <Route path="movies/:index" element={<RegularMovieDetail />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
-
             <Route path="adult-movies" element={<AdultMovies />} />
             <Route path="adult-movies/:index" element={<AdultMovieDetail />} />
-
-            <Route path="new-arrivals" element={<NewArrivals />} />
-            <Route path="staff-picks" element={<StaffPicks />} />
-            <Route path="coming-soon" element={<ComingSoon />} />
-            <Route path="other-services" element={<OtherServices />} />
+            <Route path="new-arrivals" element={<NewArrivals/>} />
+            <Route path="staff-picks"  element={<StaffPicks/>} />
+            <Route path="/coming-soon" element={<ComingSoon/>} />
+            <Route path="other-services" element={<OtherServices/>} />
             <Route path="search" element={<SearchResults />} />
             <Route path="contact" element={<Contact />} />
             <Route path="about" element={<About />} />
 
-            <Route path="login" element={<Login />} />
+            {/* Public auth routes */}
+            <Route path="login"    element={<Login />} />
             <Route path="register" element={<Register />} />
+
+            {/* Protected customer-only */}
+            <Route
+              path="account"
+              element={
+                <RequireAuth>
+                  {/* <Account /> */}
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <RequireAuth>
+                  {/* <Orders /> */}
+                </RequireAuth>
+              }
+            />
           </Route>
 
           {/* Admin portal */}
@@ -215,24 +217,14 @@ function App() {
               <RequireAdmin>
                 <AdminLayout />
               </RequireAdmin>
-              
             }
           >
-            {/* Regular titles */}
             <Route index element={<ItemList />} />
-            <Route path="items" element={<ItemList />} />
-            <Route path="items/new" element={<NewItemForm />} />
-            <Route path="items/:RegSerialNo/edit" element={<EditItemForm />} />
-
-            {/* Adult titles */}
-            <Route path="adult/items" element={<AdultItemList />} />
-            <Route path="adult/items/new" element={<NewAdultItemForm />} />
-            <Route path="adult/items/:AdultSerialNo/edit" element={<EditAdultItemForm />} />
+            <Route path="items"      element={<ItemList />} />
+            <Route path="items/new"  element={<NewItemForm />} />
+            <Route path="items/:serialno/edit" element={<EditItemForm />} />
           </Route>
         </Routes>
-
-        {/* Global footer */}
-        <Footer />
       </BrowserRouter>
     </CartProvider>
   );

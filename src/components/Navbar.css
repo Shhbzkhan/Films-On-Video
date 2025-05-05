@@ -40,7 +40,6 @@
   color: red;
 }
 
-
 /* Navbar center: slogan */
 .navbar-center {
   flex: 1;
@@ -75,6 +74,105 @@
   font-size: 30px;
   color: var(--navbar-text, #f5f5f5);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.cart-count {
+  margin-right: 8px;
+  color: var(--navbar-text, #f5f5f5);
+}
+
+/* Login link, matching navbar text color */
+.login-link {
+  color: var(--navbar-text, #f5f5f5);
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* NEW - User profile and dropdown styles */
+.user-menu {
+  position: relative;
+  margin-right: 15px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  color: var(--navbar-text, #f5f5f5);
+}
+
+.user-profile:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-icon {
+  margin-right: 8px;
+}
+
+.username {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--navbar-text, #f5f5f5);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+  text-decoration: none;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 5px 0;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #e74c3c;
+  padding: 10px 15px;
+}
+
+.logout-button svg {
+  margin-right: 8px;
 }
 
 /* Responsive adjustments */
@@ -94,16 +192,15 @@
   .navbar-center {
     font-size: 1rem;
   }
-}
-
-/* Login link, matching navbar text color */
-.login-link {
-  color: var(--navbar-text, #f5f5f5);
-  font-size: 1rem;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.login-link:hover {
-  text-decoration: underline;
+  
+  .user-menu {
+    margin-bottom: 10px;
+  }
+  
+  .user-dropdown {
+    position: fixed;
+    width: 90%;
+    left: 5%;
+    right: 5%;
+  }
 }
