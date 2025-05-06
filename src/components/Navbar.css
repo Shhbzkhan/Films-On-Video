@@ -204,3 +204,7 @@
     right: 5%;
   }
 }
+
+.cart-icon:hover {
+  text-decoration: underline;
+}

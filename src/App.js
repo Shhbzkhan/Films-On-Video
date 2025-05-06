@@ -119,7 +119,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 //import supabase from './supabaseClient';
-
+import CartSuccess from './components/CartSuccess';
 // Customer imports
 import CustomerLayout from './layouts/CustomerLayout1';
 import Home from './components/Home';
@@ -143,6 +143,11 @@ import About          from './components/About';
 import Login          from './components/Login';
 import Register       from './components/Register';
 import RequireAuth    from './components/RequireAuth';
+import CartPage from './components/CartPage';
+import RegularMovieDetails from './components/RegularMovieDetails';
+import AdultMovieDetails from './components/AdultMovieDetails';
+import ServiceRequest from "./components/ServiceRequest";
+
 //import ForgotPassword from './components/ForgotPassword';
 
 // Admin imports
@@ -189,7 +194,11 @@ function App() {
               <Route path="search" element={<SearchResults />} />
               <Route path="contact" element={<Contact />} />
               <Route path="about" element={<About />} />
-
+              <Route path="/cart-success" element={<CartSuccess />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/movies/:id" element={<RegularMovieDetails />} />
+              <Route path="/adult-movies/:id" element={<AdultMovieDetails />} />
+              <Route path="/service-request" element={<ServiceRequest />} />
               {/* Public auth routes */}
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />

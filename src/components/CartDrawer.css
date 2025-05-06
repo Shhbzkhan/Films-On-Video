@@ -114,3 +114,14 @@
 .remove-line:hover {
   background-color: #c82333;
 }
+.qty-controls button {
+  padding: 4px 8px;
+  font-size: 13px;
+  min-width: 30px;
+  text-align: center;
+}
+
+.cart-drawer .remove-line {
+  font-size: 12px;
+  padding: 5px 10px;
+}

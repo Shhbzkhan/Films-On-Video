@@ -123,9 +123,9 @@ const RegularMovies = () => {
               <p>Price: ${movie.CurrentPrice}</p>
               <Link
                 to={`/movies/${absoluteIndex}`}
-                state={{ page: currentPage }}
+                state={{ movie }}
                 className="detail-button"
-                onClick={(e) => e.stopPropagation()} // Prevent click from also adding to cart
+                onClick={(e) => e.stopPropagation()}
               >
                 More Detail
               </Link>

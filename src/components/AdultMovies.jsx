@@ -130,12 +130,13 @@ const AdultMovies = () => {
               <p>Price: ${movie.Price}</p>
               <Link
                 to={`/adult-movies/${absoluteIndex}`}
-                state={{ page: currentPage }}
+                state={{ movie }}
                 className="detail-button"
-                onClick={(e) => e.stopPropagation()} // Prevents cart-add when clicking this link
+                onClick={(e) => e.stopPropagation()}
               >
                 More Detail
               </Link>
+
             </div>
           );
         })}
