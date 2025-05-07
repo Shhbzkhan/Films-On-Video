@@ -145,7 +145,6 @@ import Register       from './components/Register';
 import RequireAuth    from './components/RequireAuth';
 import CartPage from './components/CartPage';
 import RegularMovieDetails from './components/RegularMovieDetails';
-import AdultMovieDetails from './components/AdultMovieDetails';
 import ServiceRequest from "./components/ServiceRequest";
 
 //import ForgotPassword from './components/ForgotPassword';
@@ -197,8 +196,10 @@ function App() {
               <Route path="/cart-success" element={<CartSuccess />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/movies/:id" element={<RegularMovieDetails />} />
-              <Route path="/adult-movies/:id" element={<AdultMovieDetails />} />
+              <Route path="/movies/:index" element={<RegularMovieDetail />} />
+              <Route path="/adult-movies/:index" element={<AdultMovieDetail />} />
               <Route path="/service-request" element={<ServiceRequest />} />
+              <Route path="/adult-movies/:index" element={<AdultMovieDetail />} />
               {/* Public auth routes */}
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />

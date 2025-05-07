@@ -1,19 +1,18 @@
+// src/components/RegularMovies.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./MovieList.css"; // shared styles
 import supabase from "../supabaseClient";
-import { useCart } from "../context/CartContext";
 
 const RegularMovies = () => {
   const location = useLocation();
   const initialPage = location.state?.page || 1;
   const [filterDisc, setFilterDisc] = useState("");
   const [sortOption, setSortOption] = useState("");
-  const { addToCart } = useCart();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const moviesPerPage = 15;
+  const moviesPerPage = 12;
 
   useEffect(() => {
     async function fetchData() {
@@ -59,15 +58,9 @@ const RegularMovies = () => {
     }
   };
 
-  const handleAddToCart = (movie) => {
-    addToCart(movie);
-    alert(`Added "${movie.Title}" to your cart!`);
-  };
-
   return (
     <div className="movies-container content">
       <h2>Regular Movies</h2>
-      <p className="click-instruction">👉 Click the movies you would like to add to the cart.</p>
 
       <div className="filter-sort-bar">
         <label htmlFor="discFilter">Disc Type:</label>
@@ -106,11 +99,11 @@ const RegularMovies = () => {
           const absoluteIndex = indexOfFirstMovie + index;
 
           return (
-            <div
+            <Link
+              to={`/movies/${absoluteIndex}`}
+              state={{ page: currentPage }}
               className="movie-card clickable-card"
               key={absoluteIndex}
-              onClick={() => handleAddToCart(movie)}
-              title="Click to add to cart"
             >
               <img
                 src={movie.PosterURL || "https://via.placeholder.com/150"}
@@ -121,15 +114,7 @@ const RegularMovies = () => {
               <p>{movie.Genre} • {movie.Year}</p>
               <p>{movie.Disc}</p>
               <p>Price: ${movie.CurrentPrice}</p>
-              <Link
-                to={`/movies/${absoluteIndex}`}
-                state={{ movie }}
-                className="detail-button"
-                onClick={(e) => e.stopPropagation()}
-              >
-                More Detail
-              </Link>
-            </div>
+            </Link>
           );
         })}
       </div>
